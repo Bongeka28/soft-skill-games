@@ -1,0 +1,111 @@
+<div class="min-h-screen bg-gray-50">
+  <!-- Header -->
+  <div class="bg-white shadow">
+    <div class="max-w-4xl mx-auto px-4 py-6">
+      <div class="flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-gray-900">Memory & Focus Challenge</h1>
+        <div class="flex space-x-6 text-sm">
+          <div class="text-gray-600">Matches: <span class="font-semibold">{{ matches }}</span></div>
+          <div class="text-gray-600">Attempts: <span class="font-semibold">{{ attempts }}</span></div>
+          <div class="text-gray-600">Time: <span class="font-semibold">{{ formatTime(elapsedTime) }}</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Content -->
+  <div class="max-w-4xl mx-auto px-4 py-8">
+    <div *ngIf="!gameCompleted" class="bg-white rounded-lg shadow-lg p-8">
+      <div class="mb-6 text-center">
+        <p class="text-gray-600">Find all matching pairs by clicking on the cards</p>
+      </div>
+
+      <!-- Game Grid -->
+      <div class="grid grid-cols-4 gap-4 max-w-md mx-auto">
+        <div *ngFor="let card of cards"
+             class="w-16 h-16 cursor-pointer perspective-1000"
+             (click)="flipCard(card)">
+          <div class="relative w-full h-full transition-transform duration-500 transform-style-preserve-3d"
+               [class.rotate-y-180]="card.isFlipped || card.isMatched">
+            <!-- Front of card -->
+            <div class="absolute inset-0 w-full h-full bg-indigo-600 rounded-lg flex items-center justify-center backface-hidden">
+              <div class="w-8 h-8 bg-white rounded opacity-20"></div>
+            </div>
+            <!-- Back of card -->
+            <div class="absolute inset-0 w-full h-full bg-white border-2 border-gray-300 rounded-lg flex items-center justify-center text-2xl backface-hidden rotate-y-180"
+                 [class.bg-green-100]="card.isMatched"
+                 [class.border-green-400]="card.isMatched">
+              {{ card.symbol }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Game Stats -->
+      <div class="mt-8 text-center">
+        <div class="inline-flex items-center space-x-4 bg-gray-100 rounded-lg px-6 py-3">
+          <div class="text-sm">
+            <span class="text-gray-600">Accuracy: </span>
+            <span class="font-semibold text-indigo-600">{{ accuracy }}%</span>
+          </div>
+          <div class="w-px h-4 bg-gray-300"></div>
+          <div class="text-sm">
+            <span class="text-gray-600">Progress: </span>
+            <span class="font-semibold text-indigo-600">{{ matches }}/{{ totalPairs }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div *ngIf="gameCompleted" class="bg-white rounded-lg shadow-lg p-8 text-center">
+      <div class="mb-6">
+        <div class="text-6xl mb-4">🧠</div>
+        <h2 class="text-2xl font-bold text-gray-900 mb-2">Memory Challenge Completed!</h2>
+        <p class="text-gray-600">Excellent work on completing the memory and focus assessment.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div class="text-2xl font-bold text-blue-600">{{ matches }}</div>
+          <div class="text-sm text-blue-800">Pairs Matched</div>
+        </div>
+        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+          <div class="text-2xl font-bold text-green-600">{{ accuracy }}%</div>
+          <div class="text-sm text-green-800">Accuracy</div>
+        </div>
+        <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+          <div class="text-2xl font-bold text-purple-600">{{ formatTime(finalTime) }}</div>
+          <div class="text-sm text-purple-800">Completion Time</div>
+        </div>
+      </div>
+
+      <div class="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
+        <h3 class="text-lg font-semibold text-green-800 mb-2">Assessment Complete!</h3>
+        <p class="text-green-700">
+          Your memory and focus performance has been recorded. The recruiting team will review your results and provide feedback.
+        </p>
+      </div>
+
+      <button (click)="returnToDashboard()"
+              class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-md font-medium">
+        Return to Dashboard
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+  .transform-style-preserve-3d {
+    transform-style: preserve-3d;
+  }
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
+</style>

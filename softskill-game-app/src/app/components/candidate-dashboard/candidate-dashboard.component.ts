@@ -1,0 +1,278 @@
+import {Component, OnInit} from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import {Game} from '../../models/game.model';
+import {Company, User} from '../../models/user.model';
+import {Assessment} from '../../models/assessment.model';
+import {ApiService} from '../../services/api.service';
+import {AuthService} from '../../services/auth.service';
+
+interface AssessmentWithDetails extends Assessment {
+  game?: Game;
+  company?: Company;
+}
+@Component({
+  selector: 'app-candidate-dashboard',
+  imports: [CommonModule],
+  template:`
+    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <div class="px-4 py-6 sm:px-0">
+        <h1 class="text-3xl font-bold text-gray-900 mb-8">Candidate Dashboard</h1>
+
+        <!-- Pending Assessments -->
+        <div class="mb-8">
+          <h2 class="text-2xl font-bold text-gray-900 mb-4">Pending Assessments</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div *ngFor="let assessment of pendingAssessments" class="bg-white overflow-hidden shadow rounded-lg">
+              <img
+                [src]="assessment?.game?.gameImage || 'https://via.placeholder.com/300x200'"
+                [alt]="assessment?.game?.gameName || 'Assessment image'"
+                class="w-full h-48 object-cover"
+              />
+              <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg font-medium text-gray-900">{{ assessment?.game?.gameName || 'Unnamed Game' }}</h3>
+                <p class="mt-1 text-sm text-gray-500">{{ assessment?.game?.gameDescription || 'No description' }}</p>
+                <p class="mt-2 text-sm font-medium text-indigo-600">From: {{ assessment?.company?.companyName || 'Unknown' }}</p>
+                <p class="mt-1 text-sm text-red-600">Due: {{ assessment?.dueDate | date:'short' }}</p>
+                <button
+                  (click)="startAssessment(assessment)"
+                  [attr.aria-label]="'Start ' + (assessment?.game?.gameName || 'assessment')"
+                  class="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                  Start Assessment
+                </button>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="pendingAssessments.length === 0" class="text-center py-12">
+            <p class="text-gray-500">No pending assessments at the moment.</p>
+          </div>
+        </div>
+
+        <!-- Completed Assessments -->
+        <div class="mb-8">
+          <h2 class="text-2xl font-bold text-gray-900 mb-4">Completed Assessments</h2>
+          <div class="bg-white shadow overflow-hidden sm:rounded-md">
+            <ul class="divide-y divide-gray-200">
+              <li *ngFor="let assessment of completedAssessments" class="px-4 py-4 sm:px-6">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <p class="text-sm font-medium text-indigo-600">{{ assessment?.game?.gameName || 'Unnamed Game' }}</p>
+                    <p class="text-sm text-gray-500">{{ assessment?.company?.companyName || 'Unknown Company' }}</p>
+                    <p class="text-sm text-gray-500">Completed: {{ assessment?.updatedAt | date:'short' }}</p>
+                  </div>
+                  <div class="flex-shrink-0">
+                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                  Completed
+                </span>
+                  </div>
+                </div>
+              </li>
+            </ul>
+            <div *ngIf="completedAssessments.length === 0" class="text-center py-12">
+              <p class="text-gray-500">No completed assessments yet.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Assessment Guidelines Modal -->
+    <div
+      *ngIf="showGuidelinesModal"
+      class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+    >
+      <div class="relative top-10 mx-auto p-5 border w-2/3 shadow-lg rounded-md bg-white">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Assessment Guidelines</h3>
+
+        <div *ngIf="selectedAssessment?.game" class="space-y-4">
+          <div>
+            <h4 class="text-lg font-semibold text-gray-900">{{ selectedAssessment?.game?.gameName }}</h4>
+            <p class="text-gray-600 mt-2">{{ selectedAssessment?.game?.gameDescription }}</p>
+          </div>
+
+          <div>
+            <h5 class="font-medium text-gray-900">Instructions:</h5>
+
+            <div *ngIf="selectedAssessment?.game?.gameType === 'CRITICAL_THINKING'">
+              <ul class="list-disc list-inside text-sm text-gray-600 mt-2 space-y-1">
+                <li>You will be presented with multiple-choice questions about team collaboration scenarios</li>
+                <li>Read each scenario carefully and select the best response</li>
+                <li>There is no time limit, but aim to complete within 20 minutes</li>
+                <li>Trust your instincts and choose the most appropriate solution</li>
+                <li>Your responses will be evaluated on critical thinking and problem-solving skills</li>
+              </ul>
+            </div>
+
+            <div *ngIf="selectedAssessment?.game?.gameType === 'MEMORY_FOCUS'">
+              <ul class="list-disc list-inside text-sm text-gray-600 mt-2 space-y-1">
+                <li>You will see a grid of cards with symbols</li>
+                <li>Click on cards to reveal symbols and find matching pairs</li>
+                <li>Match all pairs as quickly and accurately as possible</li>
+                <li>Your score is based on accuracy and time taken</li>
+                <li>Stay focused and try to remember card positions</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
+            <p class="text-sm text-blue-700">
+              <strong>Important:</strong> Once you start the assessment, you must complete it in one session.
+              Make sure you have a stable internet connection and won't be interrupted.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex justify-between mt-6">
+          <button
+            (click)="closeGuidelinesModal()"
+            class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          >
+            Cancel
+          </button>
+          <button
+            (click)="proceedToGame()"
+            class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          >
+            Continue to Game
+          </button>
+        </div>
+      </div>
+    </div>
+
+  `,
+  styleUrl: './candidate-dashboard.component.css'
+})
+export class CandidateDashboardComponent implements OnInit{
+  pendingAssessments: AssessmentWithDetails[] = [];
+  completedAssessments: AssessmentWithDetails[] = [];
+  currentUser: User | null = null;
+  showGuidelinesModal = false;
+  selectedAssessment: AssessmentWithDetails | null = null;
+
+  constructor(
+    private apiService: ApiService,
+    private authService: AuthService,
+    private router: Router
+  ) {
+    this.currentUser = this.authService.getCurrentUser();
+  }
+
+  ngOnInit(): void {
+    this.loadAssessments();
+  }
+
+  loadAssessments(): void {
+    if (!this.currentUser?.id) return;
+
+    this.apiService.getAssessmentsByCandidateId(this.currentUser.id).subscribe({
+      next: (assessments: Assessment[]) => this.processAssessments(assessments),
+      error: (error) => console.error('Error loading assessments:', error)
+    });
+  }
+
+  processAssessments(assessments: Assessment[]): void {
+    this.pendingAssessments = [];
+    this.completedAssessments = [];
+
+    assessments.forEach((assessment) => {
+      if (!assessment.id) {
+        console.warn('Skipping assessment with no ID:', assessment);
+        return;
+      }
+
+      this.apiService.getGameById(assessment.gameId).subscribe({
+        next: (game: Game) => {
+          const assessmentWithDetails: AssessmentWithDetails = {
+            ...assessment,
+            game: game
+          };
+
+          if (assessment.companyId) {
+            this.apiService.getAllCompanies().subscribe({
+              next: (companies: Company[]) => {
+                const company = companies.find(c => c.id === assessment.companyId);
+                if (company) {
+                  assessmentWithDetails.company = company;
+                }
+
+                this.addToCorrectList(assessmentWithDetails);
+              },
+              error: (error) => {
+                console.error('Error fetching company data:', error);
+                this.addToCorrectList(assessmentWithDetails);
+              }
+            });
+          } else {
+            this.addToCorrectList(assessmentWithDetails);
+          }
+        },
+        error: (error) => {
+          console.error('Error fetching game data:', error);
+
+          const fallbackGame: Game = {
+            id: assessment.gameId,
+            gameName: 'Unknown Game',
+            gameDescription: 'Game details unavailable',
+            skillName: 'Unknown',
+            gameUrl: '',
+            gameImage: 'https://via.placeholder.com/300x200?text=Unavailable',
+            active: false,
+            gameType: 'CRITICAL_THINKING'
+          };
+
+          const assessmentWithDetails: AssessmentWithDetails = {
+            ...assessment,
+            game: fallbackGame
+          };
+
+          this.addToCorrectList(assessmentWithDetails);
+        }
+      });
+    });
+  }
+
+  addToCorrectList(assessment: AssessmentWithDetails): void {
+    if (assessment.status === 'PENDING') {
+      this.pendingAssessments.push(assessment);
+    } else if (assessment.status === 'COMPLETED') {
+      this.completedAssessments.push(assessment);
+    }
+  }
+
+  startAssessment(assessment: AssessmentWithDetails): void {
+    this.selectedAssessment = assessment;
+    this.showGuidelinesModal = true;
+  }
+
+  closeGuidelinesModal(): void {
+    this.showGuidelinesModal = false;
+    this.selectedAssessment = null;
+  }
+
+  proceedToGame(): void {
+    const game = this.selectedAssessment?.game;
+    const id = this.selectedAssessment?.id;
+
+    if (!game || !id) {
+      console.error('Missing assessment ID or game', this.selectedAssessment);
+      alert('Error: Assessment ID or game is missing. Please refresh and try again.');
+      return;
+    }
+
+    this.closeGuidelinesModal();
+
+    if (game.gameType === 'CRITICAL_THINKING') {
+      this.router.navigate(['/game/critical-thinking'], {
+        queryParams: { assessmentId: id }
+      });
+    } else if (game.gameType === 'MEMORY_FOCUS') {
+      this.router.navigate(['/game/memory-focus'], {
+        queryParams: { assessmentId: id }
+      });
+    } else {
+      console.warn('Unknown game type:', game.gameType);
+    }
+  }
+
+
+}

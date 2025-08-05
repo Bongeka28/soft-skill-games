@@ -1,0 +1,156 @@
+<div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+  <div class="px-4 py-6 sm:px-0">
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">Recruiter Dashboard</h1>
+
+    <!-- Games Section -->
+    <div class="mb-8">
+      <h2 class="text-2xl font-bold text-gray-900 mb-4">Available Games</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div *ngFor="let game of games" class="bg-white overflow-hidden shadow rounded-lg">
+          <img [src]="game.gameImage" [alt]="game.gameName" class="w-full h-48 object-cover">
+          <div class="px-4 py-5 sm:p-6">
+            <h3 class="text-lg font-medium text-gray-900">{{ game.gameName }}</h3>
+            <p class="mt-1 text-sm text-gray-500">{{ game.gameDescription }}</p>
+            <p class="mt-2 text-sm font-medium text-indigo-600">Skill: {{ game.skillName }}</p>
+            <div class="mt-2">
+                  <span [class]="game.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                        class="inline-flex px-2 py-1 text-xs font-semibold rounded-full">
+                    {{ game.active ? 'Active' : 'Inactive' }}
+                  </span>
+            </div>
+            <button
+              *ngIf="game.active"
+              (click)="openCreateAssessmentModal(game)"
+              class="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+              Create Assessment
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reports Section -->
+    <div class="mb-8">
+      <h2 class="text-2xl font-bold text-gray-900 mb-4">Assessment Reports</h2>
+      <div class="bg-white shadow overflow-hidden sm:rounded-md">
+        <ul class="divide-y divide-gray-200">
+          <li *ngFor="let report of reports" class="px-4 py-4 sm:px-6">
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <p class="text-sm font-medium text-indigo-600">{{ report.fullname }}</p>
+                <p class="text-sm text-gray-500">{{ report.email }}</p>
+                <p class="text-sm text-gray-500">Skill: {{ report.skillType }}</p>
+              </div>
+              <div class="flex-shrink-0">
+                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                      Score: {{ report.score }}
+                    </span>
+              </div>
+              <div class="ml-4">
+                <button
+                  (click)="viewReportDetails(report)"
+                  class="text-indigo-600 hover:text-indigo-900 text-sm font-medium">
+                  View Details
+                </button>
+              </div>
+            </div>
+          </li>
+        </ul>
+        <div *ngIf="reports.length === 0" class="text-center py-12">
+          <p class="text-gray-500">No assessment reports available yet.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create Assessment Modal -->
+<div *ngIf="showCreateAssessmentModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+  <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+    <h3 class="text-lg font-bold text-gray-900 mb-4">Create Assessment</h3>
+    <form (ngSubmit)="createAssessment()">
+      <div class="mb-4">
+        <label class="block text-gray-700 text-sm font-bold mb-2">Game:</label>
+        <p class="text-gray-600">{{ selectedGame?.gameName }}</p>
+      </div>
+      <div class="mb-4">
+        <label for="candidateEmail" class="block text-gray-700 text-sm font-bold mb-2">Candidate Email:</label>
+        <input
+          type="email"
+          id="candidateEmail"
+          [(ngModel)]="candidateEmail"
+          name="candidateEmail"
+          required
+          class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          placeholder="Enter candidate email"
+        />
+      </div>
+      <div class="mb-4">
+        <label for="dueDate" class="block text-gray-700 text-sm font-bold mb-2">Due Date:</label>
+        <input
+          type="datetime-local"
+          id="dueDate"
+          [(ngModel)]="dueDate"
+          name="dueDate"
+          required
+          class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+        />
+      </div>
+      <div class="flex items-center justify-between">
+        <button
+          type="submit"
+          class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+          Create Assessment
+        </button>
+        <button
+          type="button"
+          (click)="closeCreateAssessmentModal()"
+          class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Report Details Modal -->
+<div *ngIf="showReportDetailsModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+  <div class="relative top-10 mx-auto p-5 border w-2/3 shadow-lg rounded-md bg-white">
+    <h3 class="text-lg font-bold text-gray-900 mb-4">Assessment Report Details</h3>
+    <div *ngIf="selectedReport" class="space-y-4">
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Candidate Name:</label>
+          <p class="text-gray-900">{{ selectedReport.fullname }}</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Email:</label>
+          <p class="text-gray-900">{{ selectedReport.email }}</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Skill Type:</label>
+          <p class="text-gray-900">{{ selectedReport.skillType }}</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Score:</label>
+          <p class="text-gray-900 font-semibold">{{ selectedReport.score }}%</p>
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Feedback:</label>
+        <p class="text-gray-900 mt-1">{{ selectedReport.feedback }}</p>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Completed At:</label>
+        <p class="text-gray-900">{{ selectedReport.createdAt | date:'medium' }}</p>
+      </div>
+    </div>
+    <div class="flex justify-end mt-6">
+      <button
+        (click)="closeReportDetailsModal()"
+        class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+        Close
+      </button>
+    </div>
+  </div>
+</div>

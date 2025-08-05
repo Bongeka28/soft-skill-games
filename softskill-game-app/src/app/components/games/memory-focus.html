@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memory & Focus Game</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .card {
+      perspective: 1000px;
+    }
+    .card-inner {
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+    }
+    .card.flipped .card-inner {
+      transform: rotateY(180deg);
+    }
+    .card-front, .card-back {
+      backface-visibility: hidden;
+    }
+    .card-back {
+      transform: rotateY(180deg);
+    }
+  </style>
+</head>
+<body class="bg-gray-50">
+<div id="gameContainer" class="min-h-screen">
+  <!-- Game content will be loaded here by Angular component -->
+</div>
+</body>
+</html>

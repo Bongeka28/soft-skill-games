@@ -1,0 +1,530 @@
+# API.rest - Test all endpoints for Softskill Game Application
+
+@baseUrl = http://localhost:8080/api
+
+### Company Endpoints
+
+# Get all companies
+GET {{baseUrl}}/companies
+
+###
+
+# Get company by ID
+GET {{baseUrl}}/companies/1
+
+###
+
+# Get company by number
+GET {{baseUrl}}/companies/number/COMP001
+
+###
+
+# Create company
+POST {{baseUrl}}/companies
+Content-Type: application/json
+
+{
+  "companyName": "TechCorp Solutions",
+  "companyNumber": "COMP001"
+}
+
+###
+
+# Update company
+PUT {{baseUrl}}/companies/1
+Content-Type: application/json
+
+{
+  "companyName": "TechCorp Solutions Updated",
+  "companyNumber": "COMP001"
+}
+
+###
+
+# Delete company
+DELETE {{baseUrl}}/companies/1
+
+### User Endpoints
+
+# Get all users
+GET {{baseUrl}}/users
+
+###
+
+# Get user by ID
+GET {{baseUrl}}/users/1
+
+###
+
+# Get user by email
+GET {{baseUrl}}/users/email/recruiter@techcorp.com
+
+###
+
+# Get users by role
+GET {{baseUrl}}/users/role/RECRUITER
+
+###
+
+# Create recruiter user
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Smith",
+  "email": "recruiter@techcorp.com",
+  "password": "password123",
+  "role": "RECRUITER",
+  "company": {
+    "id": 1
+  }
+}
+
+###
+
+# Create candidate user
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "firstName": "Jane",
+  "lastName": "Doe",
+  "email": "candidate@example.com",
+  "password": "password123",
+  "role": "CANDIDATE"
+}
+
+###
+
+# Login user
+POST {{baseUrl}}/users/login
+Content-Type: application/json
+
+{
+  "email": "recruiter@techcorp.com",
+  "password": "password123"
+}
+
+###
+
+# Update user
+PUT {{baseUrl}}/users/1
+Content-Type: application/json
+
+{
+  "firstName": "John Updated",
+  "lastName": "Smith",
+  "email": "recruiter@techcorp.com",
+  "password": "password123",
+  "role": "RECRUITER"
+}
+
+###
+
+# Delete user
+DELETE {{baseUrl}}/users/1
+
+### Game Endpoints
+
+# Get all games
+GET {{baseUrl}}/games
+
+###
+
+# Get game by ID
+GET {{baseUrl}}/games/1
+
+###
+
+# Get active games
+GET {{baseUrl}}/games/active
+
+###
+
+# Get games by type
+GET {{baseUrl}}/games/type/CRITICAL_THINKING
+
+###
+
+# Create Critical Thinking game
+POST {{baseUrl}}/games
+Content-Type: application/json
+
+{
+  "gameName": "Team Collaboration Challenge",
+  "gameDescription": "Test your critical thinking skills in team collaboration scenarios",
+  "skillName": "Critical Thinking",
+  "gameUrl": "/games/critical-thinking",
+  "gameImage": "https://via.placeholder.com/300x200?text=Critical+Thinking",
+  "active": true,
+  "gameType": "CRITICAL_THINKING"
+}
+
+###
+
+# Create Memory Focus game
+POST {{baseUrl}}/games
+Content-Type: application/json
+
+{
+  "gameName": "Memory & Focus Challenge",
+  "gameDescription": "Test your memory and focus with matching cards",
+  "skillName": "Memory & Focus",
+  "gameUrl": "/games/memory-focus",
+  "gameImage": "https://via.placeholder.com/300x200?text=Memory+Focus",
+  "active": true,
+  "gameType": "MEMORY_FOCUS"
+}
+
+###
+
+# Update game
+PUT {{baseUrl}}/games/1
+Content-Type: application/json
+
+{
+  "gameName": "Team Collaboration Challenge Updated",
+  "gameDescription": "Updated description",
+  "skillName": "Critical Thinking",
+  "gameUrl": "/games/critical-thinking",
+  "gameImage": "https://via.placeholder.com/300x200?text=Critical+Thinking",
+  "active": true,
+  "gameType": "CRITICAL_THINKING"
+}
+
+###
+
+# Delete game
+DELETE {{baseUrl}}/games/1
+
+### Assessment Endpoints
+
+# Get all assessments
+GET {{baseUrl}}/assessments
+
+###
+
+# Get assessment by ID
+GET {{baseUrl}}/assessments/1
+
+###
+
+# Get assessments by candidate ID
+GET {{baseUrl}}/assessments/candidate/2
+
+###
+
+# Get assessments by HR ID
+GET {{baseUrl}}/assessments/hr/1
+
+###
+
+# Get assessments by status
+GET {{baseUrl}}/assessments/status/PENDING
+
+###
+
+# Create assessment
+POST {{baseUrl}}/assessments
+Content-Type: application/json
+
+{
+  "hrId": 1,
+  "candidateId": 2,
+  "gameId": 1,
+  "companyId": 1,
+  "status": "PENDING",
+  "dueDate": "2025-12-31T23:59:59"
+}
+
+###
+
+# Update assessment
+PUT {{baseUrl}}/assessments/1
+Content-Type: application/json
+
+{
+  "hrId": 1,
+  "candidateId": 2,
+  "gameId": 1,
+  "companyId": 1,
+  "status": "COMPLETED",
+  "dueDate": "2025-12-31T23:59:59"
+}
+
+###
+
+# Delete assessment
+DELETE {{baseUrl}}/assessments/1
+
+### Score Endpoints
+
+# Get all scores
+GET {{baseUrl}}/scores
+
+###
+
+# Get score by ID
+GET {{baseUrl}}/scores/1
+
+###
+
+# Get score by assessment ID
+GET {{baseUrl}}/scores/assessment/2
+
+###
+
+# Get scores by candidate ID
+GET {{baseUrl}}/scores/candidate/2
+
+###
+
+# Create score for Critical Thinking game
+POST {{baseUrl}}/scores
+Content-Type: application/json
+
+{
+  "assessmentId": 1,
+  "candidateId": 2,
+  "score": "85",
+  "feedback": "Excellent critical thinking skills demonstrated in team collaboration scenarios.",
+  "gameData": "{\"correctAnswers\": 17, \"totalQuestions\": 20, \"timeSpent\": \"15:30\", \"categories\": {\"problemSolving\": 90, \"teamwork\": 80, \"communication\": 85}}"
+}
+
+###
+
+# Create score for Memory Focus game
+POST {{baseUrl}}/scores
+Content-Type: application/json
+
+{
+  "assessmentId": 2,
+  "candidateId": 2,
+  "score": "75",
+  "feedback": "Good memory and focus abilities with room for improvement in concentration.",
+  "gameData": "{\"matches\": 12, \"attempts\": 16, \"timeSpent\": \"08:45\", \"accuracy\": 75, \"avgResponseTime\": \"2.1\"}"
+}
+
+###
+
+# Update score
+PUT {{baseUrl}}/scores/1
+Content-Type: application/json
+
+{
+  "assessmentId": 1,
+  "candidateId": 2,
+  "score": "88",
+  "feedback": "Updated: Excellent critical thinking skills demonstrated.",
+  "gameData": "{\"correctAnswers\": 18, \"totalQuestions\": 20, \"timeSpent\": \"14:15\", \"categories\": {\"problemSolving\": 95, \"teamwork\": 80, \"communication\": 90}}"
+}
+
+###
+
+# Delete score
+DELETE {{baseUrl}}/scores/1
+
+### Report Endpoints
+
+# Get all reports
+GET {{baseUrl}}/reports
+
+###
+
+# Get report by ID
+GET {{baseUrl}}/reports/1
+
+###
+
+# Get reports by user ID
+GET {{baseUrl}}/reports/user/1
+
+###
+
+# Create report
+POST {{baseUrl}}/reports
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "scoreId": 1,
+  "fullname": "Jane Doe",
+  "email": "candidate@example.com",
+  "score": "85",
+  "skillType": "Critical Thinking",
+  "feedback": "Excellent performance in critical thinking assessment"
+}
+
+###
+
+# Update report
+PUT {{baseUrl}}/reports/1
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "scoreId": 1,
+  "fullname": "Jane Doe",
+  "email": "candidate@example.com",
+  "score": "88",
+  "skillType": "Critical Thinking",
+  "feedback": "Updated: Excellent performance in critical thinking assessment"
+}
+
+###
+
+# Delete report
+DELETE {{baseUrl}}/reports/1
+
+### Review Endpoints
+
+# Get all reviews
+GET {{baseUrl}}/reviews
+
+###
+
+# Get review by ID
+GET {{baseUrl}}/reviews/1
+
+###
+
+# Get reviews by user ID
+GET {{baseUrl}}/reviews/user/2
+
+###
+
+# Create review
+POST {{baseUrl}}/reviews
+Content-Type: application/json
+
+{
+  "userId": 2,
+  "message": "Great experience with the assessment platform. The games were engaging and well-designed."
+}
+
+###
+
+# Update review
+PUT {{baseUrl}}/reviews/1
+Content-Type: application/json
+
+{
+  "userId": 2,
+  "message": "Updated: Excellent experience with the assessment platform."
+}
+
+###
+
+# Delete review
+DELETE {{baseUrl}}/reviews/1
+
+### Complete Test Flow
+
+# 1. Create Company
+POST {{baseUrl}}/companies
+Content-Type: application/json
+
+{
+  "companyName": "Test Company",
+  "companyNumber": "TEST001"
+}
+
+###
+
+# 2. Create Recruiter
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "firstName": "Test",
+  "lastName": "Recruiter",
+  "email": "test.recruiter@test.com",
+  "password": "password123",
+  "role": "RECRUITER",
+  "company": {
+    "id": 1
+  }
+}
+
+###
+
+# 3. Create Candidate
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "firstName": "Test",
+  "lastName": "Candidate",
+  "email": "test.candidate@test.com",
+  "password": "password123",
+  "role": "CANDIDATE"
+}
+
+###
+
+# 4. Create Games
+POST {{baseUrl}}/games
+Content-Type: application/json
+
+{
+  "gameName": "Critical Thinking Challenge",
+  "gameDescription": "Test your critical thinking skills",
+  "skillName": "Critical Thinking",
+  "gameUrl": "/games/critical-thinking",
+  "gameImage": "https://via.placeholder.com/300x200?text=Critical+Thinking",
+  "active": true,
+  "gameType": "CRITICAL_THINKING"
+}
+
+###
+
+POST {{baseUrl}}/games
+Content-Type: application/json
+
+{
+  "gameName": "Memory Game",
+  "gameDescription": "Test your memory and focus",
+  "skillName": "Memory & Focus",
+  "gameUrl": "/games/memory-focus",
+  "gameImage": "https://via.placeholder.com/300x200?text=Memory+Game",
+  "active": true,
+  "gameType": "MEMORY_FOCUS"
+}
+
+###
+
+# 5. Create Assessment
+POST {{baseUrl}}/assessments
+Content-Type: application/json
+
+{
+  "hrId": 1,
+  "candidateId": 2,
+  "gameId": 1,
+  "companyId": 1,
+  "status": "PENDING",
+  "dueDate": "2025-12-31T23:59:59"
+}
+
+###
+
+# 6. Login as Recruiter
+POST {{baseUrl}}/users/login
+Content-Type: application/json
+
+{
+  "email": "test.recruiter@test.com",
+  "password": "password123"
+}
+
+###
+
+# 7. Login as Candidate
+POST {{baseUrl}}/users/login
+Content-Type: application/json
+
+{
+  "email": "test.candidate@test.com",
+  "password": "password123"
+}
