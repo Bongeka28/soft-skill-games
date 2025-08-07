@@ -33,6 +33,7 @@ public class Report {
 
     private String skillType;
 
+    @Column(columnDefinition = "TEXT")
     private String feedback;
 
     private LocalDateTime createdAt;

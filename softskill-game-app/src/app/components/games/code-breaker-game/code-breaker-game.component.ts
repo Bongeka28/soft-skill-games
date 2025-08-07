@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../../services/api.service';
 import { AuthService } from '../../../services/auth.service';
 import { Score } from '../../../models/score.model';
+import { Report } from '../../../models/report.model';
 
 interface GameState {
   secretCode: number[];
@@ -257,6 +258,10 @@ export class CodeBreakerGameComponent implements OnInit {
     this.apiService.createScore(score).subscribe({
       next: (result) => {
         console.log('Score submitted successfully:', result);
+
+        // Create report after score is successfully created
+        this.createReport(result);
+
         this.gameCompleted = true;
       },
       error: (error) => {
@@ -265,6 +270,141 @@ export class CodeBreakerGameComponent implements OnInit {
         this.gameCompleted = true;
       }
     });
+  }
+
+  createReport(scoreResult: Score): void {
+    const currentUser = this.authService.getCurrentUser();
+
+    if (!currentUser || !scoreResult.scoreId) {
+      console.error('Missing user data or score ID for report creation');
+      return;
+    }
+
+    // Get HR ID from the assessment to determine who should receive the report
+    this.getAssessmentDetails(scoreResult);
+  }
+
+  private getAssessmentDetails(scoreResult: Score): void {
+    // Since we don't have a direct getAssessmentById method, we'll get it from the candidate's assessments
+    if (!this.authService.getCurrentUser()?.id) return;
+
+    this.apiService.getAssessmentsByCandidateId(this.authService.getCurrentUser()!.id!).subscribe({
+      next: (assessments) => {
+        const currentAssessment = assessments.find(a => a.id === this.assessmentId);
+        if (currentAssessment) {
+          this.generateAndSubmitReport(scoreResult, currentAssessment);
+        } else {
+          console.error('Assessment not found for report generation');
+        }
+      },
+      error: (error) => {
+        console.error('Error fetching assessment for report:', error);
+      }
+    });
+  }
+
+  private generateAndSubmitReport(scoreResult: Score, assessment: any): void {
+    const currentUser = this.authService.getCurrentUser();
+
+    if (!currentUser) {
+      console.error('No current user found for report creation');
+      return;
+    }
+
+    const report = {
+      userId: assessment.hrId, // HR who created the assessment
+      scoreId: scoreResult.scoreId!,
+      fullname: `${currentUser.firstName} ${currentUser.lastName}`,
+      email: currentUser.email,
+      score: scoreResult.score,
+      skillType: 'Problem Solving', // Code Breaker tests problem-solving skills
+      feedback: this.generateDetailedReportFeedback(),
+    };
+
+    console.log('Creating report:', report);
+
+    this.apiService.createReport(report).subscribe({
+      next: (reportResult) => {
+        console.log('Report created successfully:', reportResult);
+      },
+      error: (error) => {
+        console.error('Error creating report:', error);
+        console.log('Report data that failed:', report);
+      }
+    });
+  }
+
+  private generateDetailedReportFeedback(): string {
+    const currentUser = this.authService.getCurrentUser();
+    let reportFeedback = `CODE BREAKER ASSESSMENT REPORT\n`;
+    reportFeedback += `Candidate: ${currentUser?.firstName} ${currentUser?.lastName}\n`;
+    reportFeedback += `Email: ${currentUser?.email}\n`;
+    reportFeedback += `Assessment Date: ${new Date().toLocaleDateString()}\n`;
+    reportFeedback += `Skill Assessed: Problem Solving\n\n`;
+
+    reportFeedback += `PERFORMANCE SUMMARY:\n`;
+    reportFeedback += `Final Score: ${this.gameState.score}%\n`;
+    reportFeedback += `Result: ${this.gameState.gameWon ? 'Successfully cracked the code' : 'Did not crack the code'}\n`;
+    reportFeedback += `Attempts Used: ${this.gameState.attempt + (this.gameState.gameWon ? 1 : 0)} of ${this.gameState.maxAttempts}\n`;
+    reportFeedback += `Time Taken: ${Math.floor(this.problemSolvingMetrics.timeSpent / 60)}:${(this.problemSolvingMetrics.timeSpent % 60).toString().padStart(2, '0')}\n\n`;
+
+    reportFeedback += `DETAILED ANALYSIS:\n`;
+    reportFeedback += `Strategic Thinking: ${Math.round(this.problemSolvingMetrics.strategicThinking)}%\n`;
+    if (this.problemSolvingMetrics.strategicThinking >= 80) {
+      reportFeedback += `- Excellent systematic approach to problem-solving\n`;
+      reportFeedback += `- Demonstrates strong analytical thinking skills\n`;
+    } else if (this.problemSolvingMetrics.strategicThinking >= 60) {
+      reportFeedback += `- Good problem-solving approach with room for improvement\n`;
+      reportFeedback += `- Shows potential for developing stronger analytical skills\n`;
+    } else {
+      reportFeedback += `- Needs development in systematic problem-solving approaches\n`;
+      reportFeedback += `- Would benefit from training in logical reasoning techniques\n`;
+    }
+
+    reportFeedback += `\nLogical Reasoning: ${Math.round(this.problemSolvingMetrics.logicalReasoning)}%\n`;
+    if (this.problemSolvingMetrics.logicalReasoning >= 80) {
+      reportFeedback += `- Outstanding ability to use feedback effectively\n`;
+      reportFeedback += `- Demonstrates excellent learning from previous attempts\n`;
+    } else if (this.problemSolvingMetrics.logicalReasoning >= 60) {
+      reportFeedback += `- Good use of available information\n`;
+      reportFeedback += `- Shows ability to adapt strategy based on feedback\n`;
+    } else {
+      reportFeedback += `- Could improve utilization of available information\n`;
+      reportFeedback += `- Would benefit from training in logical deduction techniques\n`;
+    }
+
+    reportFeedback += `\nPersistence: ${Math.round(this.problemSolvingMetrics.persistence)}%\n`;
+    if (this.problemSolvingMetrics.persistence >= 80) {
+      reportFeedback += `- Excellent determination and resilience\n`;
+      reportFeedback += `- Shows strong commitment to problem resolution\n`;
+    } else {
+      reportFeedback += `- Shows potential for building perseverance\n`;
+      reportFeedback += `- Would benefit from challenges that build resilience\n`;
+    }
+
+    reportFeedback += `\nRECRUITMENT RECOMMENDATION:\n`;
+    const overallScore = this.gameState.score;
+    if (overallScore >= 80) {
+      reportFeedback += `HIGHLY RECOMMENDED - Strong problem-solving abilities suitable for complex analytical roles.\n`;
+    } else if (overallScore >= 60) {
+      reportFeedback += `RECOMMENDED - Good problem-solving potential with room for development.\n`;
+    } else if (overallScore >= 40) {
+      reportFeedback += `CONDITIONAL - Basic problem-solving skills present, may need additional training.\n`;
+    } else {
+      reportFeedback += `NOT RECOMMENDED - Significant development needed in problem-solving skills.\n`;
+    }
+
+    reportFeedback += `\nGAME DETAILS:\n`;
+    reportFeedback += `Secret Code: ${this.gameState.secretCode.join(' ')}\n`;
+    reportFeedback += `Guess History:\n`;
+    this.gameState.guessHistory.forEach((guess, index) => {
+      const correctCount = guess.feedback.filter(f => f === 'correct').length;
+      const misplacedCount = guess.feedback.filter(f => f === 'misplaced').length;
+      const wrongCount = guess.feedback.filter(f => f === 'wrong').length;
+      reportFeedback += `Attempt ${this.gameState.guessHistory.length - index}: ${guess.digits.join('')} - ${correctCount} correct, ${misplacedCount} misplaced, ${wrongCount} wrong\n`;
+    });
+
+    return reportFeedback;
   }
 
   generateFeedback(): string {
