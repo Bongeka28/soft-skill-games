@@ -1,0 +1,144 @@
+<!-- code-breaker-game.component.html -->
+<div class="min-h-screen bg-gray-50">
+  <!-- Header -->
+  <div class="bg-white shadow">
+    <div class="max-w-4xl mx-auto px-4 py-6">
+      <div class="flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-gray-900">Code Breaker Assessment - Problem Solving</h1>
+        <div class="text-sm text-gray-500" *ngIf="!gameCompleted">
+          Attempt {{ gameState.attempt + 1 }} of {{ gameState.maxAttempts }}
+        </div>
+      </div>
+      <!-- Progress Bar -->
+      <div class="mt-4" *ngIf="!gameCompleted">
+        <div class="bg-gray-200 rounded-full h-2">
+          <div class="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+               [style.width.%]="((gameState.attempt + 1) / gameState.maxAttempts) * 100"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Content -->
+  <div class="max-w-4xl mx-auto px-4 py-8">
+    <div *ngIf="!gameCompleted" class="bg-white rounded-lg shadow-lg p-8">
+      <!-- Game Container -->
+      <div class="p-8 rounded-xl max-w-md w-full mx-auto text-center border bg-white border-gray-200 transition-colors duration-300">
+
+        <h1 class="text-3xl font-bold mb-2">
+          🎯 <span class="text-green-400">Code Breaker</span>
+        </h1>
+        <p class="text-sm mb-4 opacity-90">
+          Guess the 4-digit code (no repeats). You have 4 attempts!
+        </p>
+
+        <!-- Legend -->
+        <div class="flex justify-around mb-4 text-sm">
+          <span class="text-green-400">✔ Correct</span>
+          <span class="text-yellow-400">⚠ Misplaced</span>
+          <span class="text-red-400">❌ Wrong</span>
+        </div>
+
+        <!-- Guess History -->
+        <div class="mb-6">
+          <div *ngFor="let guess of gameState.guessHistory; trackBy: trackByIndex"
+               class="flex gap-2 justify-center mb-2">
+            <div *ngFor="let digit of guess.digits; let i = index; trackBy: trackByIndex"
+                 [class]="getDigitTileClass(guess.feedback[i])"
+                 class="w-10 h-10 flex justify-center items-center font-bold rounded-lg text-white">
+              {{ digit }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Current Game -->
+        <div *ngIf="!gameState.gameOver" class="mb-4">
+          <h3 class="mb-4">Score: <span class="text-green-400 font-bold">{{ gameState.score }}</span></h3>
+
+          <!-- Current Guess Display -->
+          <div class="flex gap-2 justify-center mb-4">
+            <div *ngFor="let slot of currentGuessSlots; let i = index; trackBy: trackByIndex"
+                 class="bg-gray-100 border-gray-300 w-10 h-10 border rounded-lg flex justify-center items-center font-bold transition-colors">
+              {{ slot !== null ? slot : '?' }}
+            </div>
+          </div>
+
+          <!-- Number Pad -->
+          <div class="grid grid-cols-5 gap-2 mb-4">
+            <button *ngFor="let digit of numberPadDigits; trackBy: trackByIndex"
+                    (click)="selectDigit(digit)"
+                    [disabled]="isDigitUsed(digit)"
+                    [class]="getNumberPadButtonClass(digit)"
+                    class="p-2 rounded-lg font-bold transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+              {{ digit }}
+            </button>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex justify-center gap-2">
+            <button (click)="submitGuess()"
+                    [disabled]="!canSubmitGuess()"
+                    class="px-6 py-3 bg-green-400 text-black font-bold rounded-lg disabled:bg-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed hover:bg-green-300 transition-colors">
+              Submit Guess
+            </button>
+
+            <button (click)="removeLastDigit()"
+                    [disabled]="gameState.currentGuess.length === 0"
+                    class="px-4 py-3 bg-red-500 text-white font-bold rounded-lg disabled:bg-gray-600 disabled:cursor-not-allowed hover:bg-red-400 transition-colors">
+              ⌫
+            </button>
+          </div>
+        </div>
+
+        <!-- Game Result -->
+        <div *ngIf="gameState.gameOver" class="mb-4">
+          <h2 [class]="gameState.gameWon ? 'text-green-400' : 'text-red-400'"
+              class="text-2xl font-bold mb-2">
+            {{ gameState.gameWon ? '🎉 You cracked the code!' : '🔒 Code Not Cracked' }}
+          </h2>
+          <p class="mb-4">
+            The secret code was: <span class="font-bold text-green-400">{{ gameState.secretCode.join(' ') }}</span>
+          </p>
+          <div class="flex justify-center gap-2">
+            <button (click)="restartGame()"
+                    class="px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-lg transition-colors">
+              🔁 Play Again
+            </button>
+            <button (click)="completeGame()"
+                    class="px-6 py-3 bg-green-400 text-black font-bold rounded-lg hover:bg-green-300 transition-colors">
+              Complete Assessment
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div *ngIf="gameCompleted" class="bg-white rounded-lg shadow-lg p-8 text-center">
+      <div class="mb-6">
+        <div class="text-6xl mb-4">🎯</div>
+        <h2 class="text-2xl font-bold text-gray-900 mb-2">Problem-Solving Assessment Completed!</h2>
+        <p class="text-gray-600">Thank you for completing the Code Breaker challenge.</p>
+      </div>
+
+      <div class="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
+        <h3 class="text-lg font-semibold text-green-800 mb-2">Assessment Submitted!</h3>
+        <p class="text-green-700">
+          Your problem-solving skills have been evaluated based on strategic thinking,
+          logical reasoning, and persistence. The recruiting team will review your performance.
+        </p>
+        <div class="mt-4 text-sm text-green-600">
+          <p><strong>Final Score:</strong> {{ gameState.score }}%</p>
+          <p *ngIf="gameState.gameWon">
+            <strong>Result:</strong> Code cracked in {{ gameState.attempt + 1 }} attempt{{ gameState.attempt === 0 ? '' : 's' }}!
+          </p>
+        </div>
+      </div>
+
+      <button (click)="returnToDashboard()"
+              class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-md font-medium">
+        Return to Dashboard
+      </button>
+    </div>
+  </div>
+</div>

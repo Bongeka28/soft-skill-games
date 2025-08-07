@@ -7,5 +7,5 @@ export interface Game {
   gameUrl: string;
   gameImage: string;
   active: boolean;
-  gameType: 'CRITICAL_THINKING' | 'MEMORY_FOCUS';
+  gameType: 'CRITICAL_THINKING' | 'MEMORY_FOCUS' | 'CODE_BREAKER';
 }

@@ -11,7 +11,7 @@ import { Report } from '../models/report.model';
   providedIn: 'root'
 })
 export class ApiService {
-  private baseUrl = 'http://localhost:8080/api';
+  private baseUrl = 'http://localhost:8081/api';
 
   constructor(private http: HttpClient) {}
 
@@ -38,6 +38,10 @@ export class ApiService {
   }
 
   // Game endpoints
+
+  createGame(game: Game): Observable<Game> {
+    return this.http.post<Game>(`${this.baseUrl}/games`, game);
+  }
   getAllGames(): Observable<Game[]> {
     return this.http.get<Game[]>(`${this.baseUrl}/games`);
   }

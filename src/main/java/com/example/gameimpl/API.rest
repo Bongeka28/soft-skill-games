@@ -1,6 +1,6 @@
 # API.rest - Test all endpoints for Softskill Game Application
 
-@baseUrl = http://localhost:8080/api
+@baseUrl = http://localhost:8081/api
 
 ### Company Endpoints
 
@@ -156,7 +156,7 @@ Content-Type: application/json
   "gameDescription": "Test your critical thinking skills in team collaboration scenarios",
   "skillName": "Critical Thinking",
   "gameUrl": "/games/critical-thinking",
-  "gameImage": "https://via.placeholder.com/300x200?text=Critical+Thinking",
+  "gameImage": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTgfmlTkqxnFA2gyYw2LkpG7GVywthSled_yg&s",
   "active": true,
   "gameType": "CRITICAL_THINKING"
 }
@@ -172,9 +172,25 @@ Content-Type: application/json
   "gameDescription": "Test your memory and focus with matching cards",
   "skillName": "Memory & Focus",
   "gameUrl": "/games/memory-focus",
-  "gameImage": "https://via.placeholder.com/300x200?text=Memory+Focus",
+  "gameImage": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSWV_8L9DFqtIMOl2_clOnluMqJ66xSwWcEOQ&s",
   "active": true,
   "gameType": "MEMORY_FOCUS"
+}
+
+###
+
+# Codebreaker
+POST {{baseUrl}}/games
+Content-Type: application/json
+
+{
+  "gameName": "Code Breaker Challenge",
+  "gameDescription": "Test your problem-solving skills by cracking secret codes using logical deduction and strategic thinking. Perfect for evaluating analytical reasoning abilities.",
+  "skillName": "Problem Solving",
+  "gameUrl": "/game/code-breaker",
+  "gameImage": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTTJkFoS4h0wnmrAn7cbfeLmnqXp39gHSOaoQ&s",
+  "active": true,
+  "gameType": "CODE_BREAKER"
 }
 
 ###

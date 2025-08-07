@@ -51,6 +51,15 @@ export class DataInitService {
         gameImage: "https://via.placeholder.com/300x200/059669/FFFFFF?text=Memory+%26+Focus",
         active: true,
         gameType: "MEMORY_FOCUS"
+      },
+      {
+        gameName: "Code Breaker Challenge",
+        gameDescription: "Test your problem-solving skills by cracking secret codes using logical deduction and strategic thinking. Perfect for evaluating analytical reasoning abilities.",
+        skillName: "Problem Solving",
+        gameUrl: "/game/code-breaker",
+        gameImage: "https://via.placeholder.com/300x200/DC2626/FFFFFF?text=Code+Breaker",
+        active: true,
+        gameType: "CODE_BREAKER"
       }
     ];
 
@@ -59,9 +68,9 @@ export class DataInitService {
         next: (existingGames) => {
           const gameExists = existingGames.some(g => g.gameName === game.gameName);
           if (!gameExists) {
-            // Create the game using the endpoint (not implemented in the component, but would be similar)
             console.log('Creating game:', game.gameName);
-            // You would call apiService.createGame(game) if that method exists
+            // Note: You'll need to add createGame method to ApiService
+            // this.apiService.createGame(game).subscribe({...});
           }
         },
         error: (error) => {

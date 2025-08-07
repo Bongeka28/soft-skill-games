@@ -34,6 +34,12 @@ interface AssessmentWithDetails extends Assessment {
                 <p class="mt-1 text-sm text-gray-500">{{ assessment?.game?.gameDescription || 'No description' }}</p>
                 <p class="mt-2 text-sm font-medium text-indigo-600">From: {{ assessment?.company?.companyName || 'Unknown' }}</p>
                 <p class="mt-1 text-sm text-red-600">Due: {{ assessment?.dueDate | date:'short' }}</p>
+                <div class="mt-2">
+                  <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                        [class]="getSkillBadgeClass(assessment?.game?.gameType)">
+                    {{ getSkillDisplayName(assessment?.game?.gameType) }}
+                  </span>
+                </div>
                 <button
                   (click)="startAssessment(assessment)"
                   [attr.aria-label]="'Start ' + (assessment?.game?.gameName || 'assessment')"
@@ -59,11 +65,17 @@ interface AssessmentWithDetails extends Assessment {
                     <p class="text-sm font-medium text-indigo-600">{{ assessment?.game?.gameName || 'Unnamed Game' }}</p>
                     <p class="text-sm text-gray-500">{{ assessment?.company?.companyName || 'Unknown Company' }}</p>
                     <p class="text-sm text-gray-500">Completed: {{ assessment?.updatedAt | date:'short' }}</p>
+                    <div class="mt-1">
+                      <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                            [class]="getSkillBadgeClass(assessment?.game?.gameType)">
+                        {{ getSkillDisplayName(assessment?.game?.gameType) }}
+                      </span>
+                    </div>
                   </div>
                   <div class="flex-shrink-0">
-                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                  Completed
-                </span>
+                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                      Completed
+                    </span>
                   </div>
                 </div>
               </li>
@@ -88,6 +100,12 @@ interface AssessmentWithDetails extends Assessment {
           <div>
             <h4 class="text-lg font-semibold text-gray-900">{{ selectedAssessment?.game?.gameName }}</h4>
             <p class="text-gray-600 mt-2">{{ selectedAssessment?.game?.gameDescription }}</p>
+            <div class="mt-2">
+              <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full"
+                    [class]="getSkillBadgeClass(selectedAssessment?.game?.gameType)">
+                {{ getSkillDisplayName(selectedAssessment?.game?.gameType) }}
+              </span>
+            </div>
           </div>
 
           <div>
@@ -110,6 +128,20 @@ interface AssessmentWithDetails extends Assessment {
                 <li>Match all pairs as quickly and accurately as possible</li>
                 <li>Your score is based on accuracy and time taken</li>
                 <li>Stay focused and try to remember card positions</li>
+              </ul>
+            </div>
+
+            <div *ngIf="selectedAssessment?.game?.gameType === 'CODE_BREAKER'">
+              <ul class="list-disc list-inside text-sm text-gray-600 mt-2 space-y-1">
+                <li>You will need to crack a 4-digit secret code using logical deduction</li>
+                <li>Each digit in the code is unique (no repeats from 0-9)</li>
+                <li>After each guess, you'll receive color-coded feedback:</li>
+                <li class="ml-4 flex items-center"><span class="w-3 h-3 bg-green-400 rounded mr-2"></span>Green = Correct digit in correct position</li>
+                <li class="ml-4 flex items-center"><span class="w-3 h-3 bg-yellow-400 rounded mr-2"></span>Yellow = Correct digit in wrong position</li>
+                <li class="ml-4 flex items-center"><span class="w-3 h-3 bg-red-400 rounded mr-2"></span>Red = Digit not in the code</li>
+                <li>You have 4 attempts to crack the code</li>
+                <li>Use strategic thinking and logical reasoning to solve efficiently</li>
+                <li>Score is based on success, attempts used, and problem-solving approach</li>
               </ul>
             </div>
           </div>
@@ -138,7 +170,6 @@ interface AssessmentWithDetails extends Assessment {
         </div>
       </div>
     </div>
-
   `,
   styleUrl: './candidate-dashboard.component.css'
 })
@@ -269,10 +300,39 @@ export class CandidateDashboardComponent implements OnInit{
       this.router.navigate(['/game/memory-focus'], {
         queryParams: { assessmentId: id }
       });
+    } else if (game.gameType === 'CODE_BREAKER') {
+      this.router.navigate(['/game/code-breaker'], {
+        queryParams: { assessmentId: id }
+      });
     } else {
       console.warn('Unknown game type:', game.gameType);
     }
   }
 
+  getSkillBadgeClass(gameType: string | undefined): string {
+    switch (gameType) {
+      case 'CRITICAL_THINKING':
+        return 'bg-blue-100 text-blue-800';
+      case 'MEMORY_FOCUS':
+        return 'bg-green-100 text-green-800';
+      case 'CODE_BREAKER':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  }
+
+  getSkillDisplayName(gameType: string | undefined): string {
+    switch (gameType) {
+      case 'CRITICAL_THINKING':
+        return 'Critical Thinking';
+      case 'MEMORY_FOCUS':
+        return 'Memory & Focus';
+      case 'CODE_BREAKER':
+        return 'Problem Solving';
+      default:
+        return 'Unknown Skill';
+    }
+  }
 
 }
