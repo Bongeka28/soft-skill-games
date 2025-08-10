@@ -259,6 +259,9 @@ export class CodeBreakerGameComponent implements OnInit {
       next: (result) => {
         console.log('Score submitted successfully:', result);
 
+        // Update assessment status to completed after score submission
+        this.updateAssessmentStatus();
+
         // Create report after score is successfully created
         this.createReport(result);
 
@@ -268,6 +271,43 @@ export class CodeBreakerGameComponent implements OnInit {
         console.error('Error submitting score:', error);
         console.log(score);
         this.gameCompleted = true;
+      }
+    });
+  }
+
+  updateAssessmentStatus(): void {
+    // First, get the current assessment details
+    if (!this.authService.getCurrentUser()?.id) {
+      console.error('No current user found for assessment update');
+      return;
+    }
+
+    this.apiService.getAssessmentsByCandidateId(this.authService.getCurrentUser()!.id!).subscribe({
+      next: (assessments) => {
+        const currentAssessment = assessments.find(a => a.id === this.assessmentId);
+        if (currentAssessment) {
+          // Update the assessment status to COMPLETED
+          const updatedAssessment = {
+            ...currentAssessment,
+            status: 'COMPLETED' as const,
+            updatedAt: new Date().toISOString()
+          };
+
+          this.apiService.updateAssessment(this.assessmentId, updatedAssessment).subscribe({
+            next: (result) => {
+              console.log('Assessment status updated to COMPLETED:', result);
+            },
+            error: (error) => {
+              console.error('Error updating assessment status:', error);
+              console.log('Assessment data:', updatedAssessment);
+            }
+          });
+        } else {
+          console.error('Assessment not found for status update');
+        }
+      },
+      error: (error) => {
+        console.error('Error fetching assessment for status update:', error);
       }
     });
   }
